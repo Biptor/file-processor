@@ -1,7 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using System.Globalization;
-Console.WriteLine("Hello, World!");
-
 
 var linesPersonFile = new List<string>(){
     "123,Biptor,82-04-05",
@@ -13,33 +11,49 @@ var linesAddressFile = new List<string>(){
     "calle456,San Agustin"
 };
 
-var outputLines = new List<string>();
+var merged = MergeFilesContent(linesPersonFile, linesAddressFile);
 
-for (var i = 0;  i < linesPersonFile.Count(); i++) {
-    var newLine = string.Concat(linesPersonFile[i], ",", linesAddressFile[i]);
+var finalContent = GenerateFileContent(merged);
 
-    outputLines.Add(newLine);
-}
 
-foreach (var output in outputLines) {
-    Console.WriteLine(output);
 
-    var lineContent = output.Split(',');
+IEnumerable<string> MergeFilesContent(List<string> linesPersonFile,
+List<string> linesAddressFile) {
+    var outputLines = new List<string>();
 
-    Console.WriteLine(lineContent);
+    for (var i = 0;  i < linesPersonFile.Count(); i++) {
+        var newLine = string.Concat(linesPersonFile[i], ",", linesAddressFile[i]);
 
-    DateTime fecha;
-    bool exito = DateTime.TryParseExact(
-    lineContent[2],
-    "yy-MM-dd",
-    CultureInfo.InvariantCulture,
-    DateTimeStyles.None,
-    out fecha);
-
-    Console.WriteLine(fecha.ToString());
-
-    foreach (var content in lineContent){
-        var tmp = string.Concat(content, "|");
+        outputLines.Add(newLine);
     }
+
+    return outputLines;
 }
 
+IEnumerable<string> GenerateFileContent(IEnumerable<string> linesMerged) {
+    var outputLines = new List<string>();
+
+    foreach (var output in linesMerged) {
+
+        var lineContent = output.Split(',');
+
+        DateTime dateOfBirth;
+
+        if (DateTime.TryParseExact(
+            lineContent[2],
+            "yy-MM-dd",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out dateOfBirth)
+            ) {
+
+            lineContent[2] = dateOfBirth.ToString();
+
+            var finalLine = string.Join('|', lineContent);
+
+            outputLines.Add(finalLine);
+        }
+    }
+
+    return outputLines;
+}
